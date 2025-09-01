@@ -1,0 +1,27 @@
+[build]
+builder = "DOCKERFILE"
+
+[deploy]
+healthcheckPath = "/"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+
+[environments.production]
+[environments.production.variables]
+KAFKA_CLUSTER_ID = { $default = "kraft-railway-prod" }
+KAFKA_HEAP_OPTS = { $default = "-Xmx512m -Xms512m" }
+KAFKA_JVM_PERFORMANCE_OPTS = { $default = "-server -XX:+UseG1GC -XX:MaxGCPauseMillis=20" }
+KAFKA_LOG_RETENTION_HOURS = { $default = "168" }
+KAFKA_LOG_RETENTION_BYTES = { $default = "1073741824" }
+KAFKA_LOG_SEGMENT_BYTES = { $default = "1073741824" }
+KAFKA_NUM_PARTITIONS = { $default = "3" }
+KAFKA_DEFAULT_REPLICATION_FACTOR = { $default = "1" }
+KAFKA_MIN_INSYNC_REPLICAS = { $default = "1" }
+
+[environments.staging]
+[environments.staging.variables]
+KAFKA_CLUSTER_ID = { $default = "kraft-railway-staging" }
+KAFKA_HEAP_OPTS = { $default = "-Xmx256m -Xms256m" }
+KAFKA_LOG_RETENTION_HOURS = { $default = "24" }
+KAFKA_LOG_RETENTION_BYTES = { $default = "268435456" }
+KAFKA_NUM_PARTITIONS = { $default = "1" }

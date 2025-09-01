@@ -1,0 +1,25 @@
+# Environment files
+.env
+.env.*
+
+# Docker volumes
+data/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Kafka data (if running locally)
+kafka-logs/
+__consumer_offsets-*
+__transaction_state-*
