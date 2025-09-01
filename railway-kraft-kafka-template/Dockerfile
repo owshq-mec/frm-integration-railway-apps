@@ -1,4 +1,4 @@
-FROM confluentinc/cp-kafka:7.5.0
+FROM apache/kafka:latest
 
 # Set environment variables for KRaft mode
 ENV KAFKA_PROCESS_ROLES=broker,controller
@@ -35,9 +35,8 @@ ENV KAFKA_JMX_HOSTNAME=localhost
 # Copy startup script first and set permissions as root
 COPY --chmod=755 start-kraft-kafka.sh /usr/local/bin/
 
-# Create data directory and set permissions
-RUN mkdir -p /var/lib/kafka/data && \
-    chown -R appuser:appuser /var/lib/kafka/data
+# Create data directory
+RUN mkdir -p /var/lib/kafka/data
 
 # Expose ports
 EXPOSE 9092 9093 9999
@@ -46,7 +45,5 @@ EXPOSE 9092 9093 9999
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD kafka-broker-api-versions --bootstrap-server localhost:9092 || exit 1
 
-# Switch to appuser for security
-USER appuser
-
+# Run as non-root user (Apache Kafka image already has a kafka user)
 CMD ["/usr/local/bin/start-kraft-kafka.sh"]
