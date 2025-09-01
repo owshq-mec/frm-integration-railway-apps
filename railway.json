@@ -1,0 +1,38 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "DOCKER",
+    "dockerImage": "mateushenrique/kafka-kraft-railway:latest"
+  },
+  "deploy": {
+    "numReplicas": 1,
+    "sleepApplication": false,
+    "restartPolicyType": "ON_FAILURE"
+  },
+  "environments": {
+    "production": {
+      "variables": {
+        "KAFKA_CLUSTER_ID": "${{ secret(KAFKA_CLUSTER_ID) || 'kraft-railway-cluster-' + RAILWAY_SERVICE_ID }}",
+        "KAFKA_HEAP_OPTS": "-Xmx512m -Xms512m",
+        "KAFKA_JVM_PERFORMANCE_OPTS": "-server -XX:+UseG1GC -XX:MaxGCPauseMillis=20 -XX:InitiatingHeapOccupancyPercent=35",
+        "KAFKA_LOG_RETENTION_HOURS": "168",
+        "KAFKA_LOG_RETENTION_BYTES": "1073741824",
+        "KAFKA_LOG_SEGMENT_BYTES": "1073741824",
+        "KAFKA_NUM_PARTITIONS": "3",
+        "KAFKA_DEFAULT_REPLICATION_FACTOR": "1",
+        "KAFKA_MIN_INSYNC_REPLICAS": "1",
+        "RAILWAY_TCP_PROXY_DOMAIN": "${{ RAILWAY_TCP_PROXY_DOMAIN }}",
+        "RAILWAY_TCP_PROXY_PORT": "${{ RAILWAY_TCP_PROXY_PORT }}"
+      }
+    },
+    "staging": {
+      "variables": {
+        "KAFKA_CLUSTER_ID": "kraft-staging-cluster",
+        "KAFKA_HEAP_OPTS": "-Xmx256m -Xms256m",
+        "KAFKA_LOG_RETENTION_HOURS": "24",
+        "KAFKA_LOG_RETENTION_BYTES": "268435456",
+        "KAFKA_NUM_PARTITIONS": "1"
+      }
+    }
+  }
+}
