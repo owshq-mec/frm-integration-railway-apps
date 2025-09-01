@@ -32,13 +32,12 @@ ENV KAFKA_MIN_INSYNC_REPLICAS=1
 ENV KAFKA_JMX_PORT=9999
 ENV KAFKA_JMX_HOSTNAME=localhost
 
+# Copy startup script first and set permissions as root
+COPY --chmod=755 start-kraft-kafka.sh /usr/local/bin/
+
 # Create data directory and set permissions
 RUN mkdir -p /var/lib/kafka/data && \
     chown -R appuser:appuser /var/lib/kafka/data
-
-# Copy startup script
-COPY start-kraft-kafka.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/start-kraft-kafka.sh
 
 # Expose ports
 EXPOSE 9092 9093 9999
