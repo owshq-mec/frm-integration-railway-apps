@@ -14,15 +14,20 @@ else
     echo "Using provided Cluster ID: $KAFKA_CLUSTER_ID"
 fi
 
-# Configure external access using Railway domain and port
-if [ -n "$RAILWAY_PUBLIC_DOMAIN" ] && [ -n "$PORT" ]; then
+# Configure external access using Railway TCP proxy
+if [ -n "$RAILWAY_TCP_PROXY_DOMAIN" ] && [ -n "$RAILWAY_TCP_PROXY_PORT" ]; then
+    export KAFKA_LISTENERS="${KAFKA_LISTENERS:-PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:9094}"
+    export KAFKA_ADVERTISED_LISTENERS="PLAINTEXT://localhost:9092,EXTERNAL://$RAILWAY_TCP_PROXY_DOMAIN:$RAILWAY_TCP_PROXY_PORT"
+    export KAFKA_LISTENER_SECURITY_PROTOCOL_MAP="${KAFKA_LISTENER_SECURITY_PROTOCOL_MAP:-PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT}"
+    echo "TCP Proxy configured for external access:"
+    echo "  External endpoint: $RAILWAY_TCP_PROXY_DOMAIN:$RAILWAY_TCP_PROXY_PORT"
+    echo "  Listeners: $KAFKA_LISTENERS"
+elif [ -n "$RAILWAY_PUBLIC_DOMAIN" ] && [ -n "$PORT" ]; then
     export KAFKA_ADVERTISED_LISTENERS="PLAINTEXT://$RAILWAY_PUBLIC_DOMAIN:$PORT"
-    echo "External access configured: $RAILWAY_PUBLIC_DOMAIN:$PORT"
-elif [ -n "$RAILWAY_TCP_PROXY_DOMAIN" ] && [ -n "$RAILWAY_TCP_PROXY_PORT" ]; then
-    export KAFKA_ADVERTISED_LISTENERS="PLAINTEXT://$RAILWAY_TCP_PROXY_DOMAIN:$RAILWAY_TCP_PROXY_PORT"
-    echo "TCP Proxy configured: $RAILWAY_TCP_PROXY_DOMAIN:$RAILWAY_TCP_PROXY_PORT"
+    echo "Public domain configured: $RAILWAY_PUBLIC_DOMAIN:$PORT"
 else
-    export KAFKA_ADVERTISED_LISTENERS="PLAINTEXT://localhost:9092"
+    export KAFKA_LISTENERS="${KAFKA_LISTENERS:-PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093}"
+    export KAFKA_ADVERTISED_LISTENERS="${KAFKA_ADVERTISED_LISTENERS:-PLAINTEXT://localhost:9092}"
     echo "Using localhost configuration (local development)"
 fi
 
@@ -42,6 +47,7 @@ controller.quorum.voters=$KAFKA_CONTROLLER_QUORUM_VOTERS
 # Listeners
 listeners=$KAFKA_LISTENERS
 advertised.listeners=$KAFKA_ADVERTISED_LISTENERS
+listener.security.protocol.map=${KAFKA_LISTENER_SECURITY_PROTOCOL_MAP:-PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT}
 inter.broker.listener.name=$KAFKA_INTER_BROKER_LISTENER_NAME
 controller.listener.names=$KAFKA_CONTROLLER_LISTENER_NAMES
 
@@ -63,6 +69,24 @@ group.initial.rebalance.delay.ms=$KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS
 log.retention.hours=$KAFKA_LOG_RETENTION_HOURS
 log.retention.bytes=$KAFKA_LOG_RETENTION_BYTES
 log.segment.bytes=$KAFKA_LOG_SEGMENT_BYTES
+log.cleanup.policy=${KAFKA_LOG_CLEANUP_POLICY:-delete}
+
+# Auto topic creation
+auto.create.topics.enable=${KAFKA_AUTO_CREATE_TOPICS_ENABLE:-true}
+delete.topic.enable=${KAFKA_DELETE_TOPIC_ENABLE:-true}
+
+# Compression and message size
+compression.type=${KAFKA_COMPRESSION_TYPE:-snappy}
+message.max.bytes=${KAFKA_MESSAGE_MAX_BYTES:-5242880}
+replica.fetch.max.bytes=${KAFKA_REPLICA_FETCH_MAX_BYTES:-5242880}
+max.request.size=${KAFKA_MAX_REQUEST_SIZE:-5242880}
+
+# Network and request handling
+num.network.threads=${KAFKA_NUM_NETWORK_THREADS:-8}
+num.io.threads=${KAFKA_NUM_IO_THREADS:-8}
+socket.send.buffer.bytes=${KAFKA_SOCKET_SEND_BUFFER_BYTES:-102400}
+socket.receive.buffer.bytes=${KAFKA_SOCKET_RECEIVE_BUFFER_BYTES:-102400}
+socket.request.max.bytes=${KAFKA_SOCKET_REQUEST_MAX_BYTES:-104857600}
 
 # JMX monitoring
 jmx.port=$KAFKA_JMX_PORT

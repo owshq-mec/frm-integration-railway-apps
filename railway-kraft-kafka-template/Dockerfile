@@ -39,7 +39,11 @@ COPY --chmod=755 start-kraft-kafka.sh /usr/local/bin/
 RUN mkdir -p /var/lib/kafka/data
 
 # Expose ports
-EXPOSE 9092 9093 9999
+# 9092: Internal Kafka broker
+# 9093: KRaft controller
+# 9094: External client access
+# 9999: JMX monitoring
+EXPOSE 9092 9093 9094 9999
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
