@@ -43,7 +43,7 @@ EXPOSE 9092 9093 9999
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD kafka-broker-api-versions --bootstrap-server localhost:9092 || exit 1
+    CMD /opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 || exit 1
 
 # Run as non-root user (Apache Kafka image already has a kafka user)
 CMD ["/usr/local/bin/start-kraft-kafka.sh"]

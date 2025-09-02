@@ -8,7 +8,7 @@ echo "Process Roles: $KAFKA_PROCESS_ROLES"
 
 # Generate cluster UUID if not provided
 if [ -z "$KAFKA_CLUSTER_ID" ]; then
-    export KAFKA_CLUSTER_ID=$(kafka-storage random-uuid)
+    export KAFKA_CLUSTER_ID=$(/opt/kafka/bin/kafka-storage.sh random-uuid)
     echo "Generated Cluster ID: $KAFKA_CLUSTER_ID"
 else
     echo "Using provided Cluster ID: $KAFKA_CLUSTER_ID"
@@ -71,7 +71,7 @@ EOF
 # Check if storage is already formatted
 if [ ! -f "$KAFKA_LOG_DIRS/meta.properties" ]; then
     echo "📦 Formatting Kafka storage (first run)..."
-    kafka-storage format \
+    /opt/kafka/bin/kafka-storage.sh format \
         --config /tmp/server.properties \
         --cluster-id $KAFKA_CLUSTER_ID \
         --ignore-formatted
@@ -91,4 +91,4 @@ echo "  Memory: $KAFKA_HEAP_OPTS"
 echo "🎯 Starting Kafka KRaft server..."
 echo "================================"
 
-exec kafka-server-start /tmp/server.properties
+exec /opt/kafka/bin/kafka-server-start.sh /tmp/server.properties
