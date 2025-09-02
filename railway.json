@@ -6,7 +6,8 @@
   "deploy": {
     "numReplicas": 1,
     "sleepApplication": false,
-    "restartPolicyType": "ON_FAILURE"
+    "restartPolicyType": "ON_FAILURE",
+    "tcpProxyApplicationPort": 9092
   },
   "environments": {
     "production": {
@@ -46,7 +47,6 @@
         "KAFKA_REPLICA_FETCH_MAX_BYTES": "5242880",
         "KAFKA_MESSAGE_MAX_BYTES": "5242880",
         
-        "RAILWAY_TCP_APPLICATION_PORT": "9092",
         "RAILWAY_TCP_PROXY_DOMAIN": "${{ RAILWAY_TCP_PROXY_DOMAIN }}",
         "RAILWAY_TCP_PROXY_PORT": "${{ RAILWAY_TCP_PROXY_PORT }}"
       }

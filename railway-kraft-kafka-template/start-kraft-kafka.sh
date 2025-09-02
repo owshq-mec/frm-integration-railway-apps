@@ -14,25 +14,26 @@ else
     echo "Using provided Cluster ID: $KAFKA_CLUSTER_ID"
 fi
 
-# Configure external access using Railway TCP proxy
+# Configure listeners - simplified approach for Railway
+# Railway TCP proxy maps external port to internal port 9092
 if [ -n "$RAILWAY_TCP_PROXY_DOMAIN" ] && [ -n "$RAILWAY_TCP_PROXY_PORT" ]; then
-    # Force set listeners to include EXTERNAL when TCP proxy is configured
-    export KAFKA_LISTENERS="PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:9094"
-    export KAFKA_ADVERTISED_LISTENERS="PLAINTEXT://localhost:9092,EXTERNAL://$RAILWAY_TCP_PROXY_DOMAIN:$RAILWAY_TCP_PROXY_PORT"
-    export KAFKA_LISTENER_SECURITY_PROTOCOL_MAP="PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT"
-    echo "TCP Proxy configured for external access:"
+    # Use single PLAINTEXT listener for both internal and external
+    export KAFKA_LISTENERS="PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"
+    export KAFKA_ADVERTISED_LISTENERS="PLAINTEXT://$RAILWAY_TCP_PROXY_DOMAIN:$RAILWAY_TCP_PROXY_PORT"
+    export KAFKA_LISTENER_SECURITY_PROTOCOL_MAP="PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
+    echo "Railway TCP Proxy configured:"
     echo "  External endpoint: $RAILWAY_TCP_PROXY_DOMAIN:$RAILWAY_TCP_PROXY_PORT"
-    echo "  Listeners: $KAFKA_LISTENERS"
+    echo "  Internal listener: 0.0.0.0:9092"
     echo "  Advertised: $KAFKA_ADVERTISED_LISTENERS"
 elif [ -n "$RAILWAY_PUBLIC_DOMAIN" ] && [ -n "$PORT" ]; then
-    export KAFKA_LISTENERS="${KAFKA_LISTENERS:-PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093}"
+    export KAFKA_LISTENERS="PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"
     export KAFKA_ADVERTISED_LISTENERS="PLAINTEXT://$RAILWAY_PUBLIC_DOMAIN:$PORT"
-    export KAFKA_LISTENER_SECURITY_PROTOCOL_MAP="${KAFKA_LISTENER_SECURITY_PROTOCOL_MAP:-PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT}"
+    export KAFKA_LISTENER_SECURITY_PROTOCOL_MAP="PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
     echo "Public domain configured: $RAILWAY_PUBLIC_DOMAIN:$PORT"
 else
-    export KAFKA_LISTENERS="${KAFKA_LISTENERS:-PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093}"
-    export KAFKA_ADVERTISED_LISTENERS="${KAFKA_ADVERTISED_LISTENERS:-PLAINTEXT://localhost:9092}"
-    export KAFKA_LISTENER_SECURITY_PROTOCOL_MAP="${KAFKA_LISTENER_SECURITY_PROTOCOL_MAP:-PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT}"
+    export KAFKA_LISTENERS="PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"
+    export KAFKA_ADVERTISED_LISTENERS="PLAINTEXT://localhost:9092"
+    export KAFKA_LISTENER_SECURITY_PROTOCOL_MAP="PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
     echo "Using localhost configuration (local development)"
 fi
 
@@ -111,10 +112,19 @@ fi
 
 # Verify configuration
 echo "🔍 Configuration Summary:"
+echo "  Listeners: $KAFKA_LISTENERS"
 echo "  Advertised Listeners: $KAFKA_ADVERTISED_LISTENERS"
+echo "  Protocol Map: $KAFKA_LISTENER_SECURITY_PROTOCOL_MAP"
+echo "  Inter-broker: $KAFKA_INTER_BROKER_LISTENER_NAME"
+echo "  Controller: $KAFKA_CONTROLLER_LISTENER_NAMES"
 echo "  Log Dirs: $KAFKA_LOG_DIRS"
 echo "  Cluster ID: $KAFKA_CLUSTER_ID"
 echo "  Memory: $KAFKA_HEAP_OPTS"
+
+# Debug: Show the generated config
+echo ""
+echo "📄 Generated server.properties:"
+cat /tmp/server.properties | grep -E "^(listeners|advertised|controller|process.roles|node.id)" | head -10
 
 # Start Kafka server
 echo "🎯 Starting Kafka KRaft server..."
