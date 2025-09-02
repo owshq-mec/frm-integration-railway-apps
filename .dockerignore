@@ -1,0 +1,8 @@
+.git
+.idea
+*.md
+railway-kraft-kafka-template/
+docker-compose.yml
+deploy-to-railway.sh
+test-kraft-kafka.sh
+*.toml
